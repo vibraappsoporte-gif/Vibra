@@ -36,7 +36,8 @@ var db=firebase.firestore();
 function esc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(()=>{}); }
 var deferredPrompt=null;
-window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; var b=document.getElementById('installBtn'); if(b){ b.textContent='↓ Instalar Vibra'; b.disabled=false; } });
+window.addEventListener('beforeinstallprompt', e=>{ console.log('beforeinstallprompt capturado'); e.preventDefault(); deferredPrompt=e; var b=document.getElementById('installBtn'); if(b){ b.textContent='↓ Instalar Vibra'; b.style.background='#7c3aed'; b.disabled=false; } });
+window.addEventListener('appinstalled', ()=>{ console.log('App instalada'); deferredPrompt=null; });
 
 var params=new URLSearchParams(location.search);
 var id=params.get('id');
