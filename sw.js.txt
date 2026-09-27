@@ -1,4 +1,56 @@
 
 self.addEventListener('install', e => { self.skipWaiting(); });
 self.addEventListener('activate', e => { self.clients.claim(); });
-self.addEventListener('fetch', e => { e.respondWith(fetch(e.request).catch(()=> new Response('Offline'))); });
+
+// Badge support from messages
+self.addEventListener('message', event => {
+  if(event.data && event.data.type==='SET_BADGE'){
+    const count = event.data.count||0;
+    if(self.navigator && self.navigator.setAppBadge){
+      if(count>0) self.navigator.setAppBadge(count).catch(()=>{});
+      else self.navigator.clearAppBadge().catch(()=>{});
+    }
+  }
+  if(event.data && event.data.type==='NOTIF'){
+    self.registration.showNotification(event.data.title||'Vibra 💬', {
+      body: event.data.body||'Nuevo mensaje',
+      icon: event.data.icon||'/icon.png',
+      badge: '/icon.png',
+      vibrate: [120,40,120],
+      data: event.data
+    });
+  }
+});
+
+self.addEventListener('push', event => {
+  const data = event.data ? event.data.json() : {title:'Vibra 💬', body:'Nuevo mensaje'};
+  event.waitUntil(
+    self.registration.showNotification(data.title||'Vibra 💬', {
+      body: data.body||'Nuevo mensaje en Vibra',
+      icon: '/icon.png',
+      badge: '/icon.png',
+      vibrate: [200,100,200],
+      tag: 'vibra-push'
+    }).then(()=>{
+      if(self.navigator && self.navigator.setAppBadge){
+        return self.navigator.setAppBadge(1).catch(()=>{});
+      }
+    })
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({type:'window', includeUncontrolled:true}).then(list=>{
+      for(let c of list){ if(c.url.includes('install.html') || c.url.includes('vibra')){ return c.focus(); } }
+      return clients.openWindow('./install.html');
+    }).then(()=>{
+      if(self.navigator && self.navigator.clearAppBadge) self.navigator.clearAppBadge().catch(()=>{});
+    })
+  );
+});
+
+self.addEventListener('fetch', e => { 
+  e.respondWith(fetch(e.request).catch(()=> new Response('Offline', {status:200}))); 
+});
