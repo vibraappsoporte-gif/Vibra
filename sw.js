@@ -10,9 +10,11 @@ try{ messaging = firebase.messaging(); }catch(e){}
 self.addEventListener('install', e=>{ self.skipWaiting(); });
 self.addEventListener('activate', e=>{ self.clients.claim(); });
 
+let lastBadgeCount = 0;
 self.addEventListener('message', e=>{
   if(e.data && (e.data.type==='SET_BADGE' || e.data.type==='VIBRA_BADGE')){
     try{
+      lastBadgeCount = parseInt(e.data.count)||0;
       if('setAppBadge' in self.navigator){
         if(e.data.count>0) self.navigator.setAppBadge(e.data.count).catch(()=>{});
         else if('clearAppBadge' in self.navigator) self.navigator.clearAppBadge().catch(()=>{});
@@ -20,15 +22,13 @@ self.addEventListener('message', e=>{
     }catch(err){}
   }
   if(e.data && e.data.type==='CLEAR_BADGE'){
-    try{ if('clearAppBadge' in self.navigator) self.navigator.clearAppBadge().catch(()=>{}); }catch(e){}
+    try{ lastBadgeCount=0; if('clearAppBadge' in self.navigator) self.navigator.clearAppBadge().catch(()=>{}); }catch(e){}
   }
   if(e.data && e.data.type==='VIBRA_NEW_MESSAGE'){
     const count = e.data.count||1;
-    // Mostrar notificación aunque app cerrada (si SW está vivo)
+    lastBadgeCount = count;
     showVibraNotification(count, e.data.sender||'Alguien');
-    try{
-      if('setAppBadge' in self.navigator) self.navigator.setAppBadge(count).catch(()=>{});
-    }catch(e){}
+    try{ if('setAppBadge' in self.navigator) self.navigator.setAppBadge(count).catch(()=>{}); }catch(e){}
   }
 });
 
@@ -54,8 +54,8 @@ if(messaging){
   messaging.onBackgroundMessage(payload=>{
     console.log('FCM background', payload);
     const count = parseInt(payload.data?.count||'1');
+    lastBadgeCount = count;
     const sender = payload.data?.sender || payload.notification?.title || 'Nuevo mensaje';
-    const body = payload.notification?.body || `${sender} te escribió en Vibra`;
     showVibraNotification(count, sender);
     try{ if('setAppBadge' in self.navigator && count>0) self.navigator.setAppBadge(count); }catch(e){}
   });
@@ -68,6 +68,7 @@ self.addEventListener('push', e=>{
   const title = data.title || data.notification?.title || 'Vibra 💬';
   const body = data.body || data.notification?.body || 'Tienes mensajes nuevos';
   const count = data.count || data.data?.count || 1;
+  lastBadgeCount = parseInt(count)||1;
   e.waitUntil(
     (async()=>{
       try{ if('setAppBadge' in self.navigator) await self.navigator.setAppBadge(count); }catch(err){}
@@ -86,7 +87,11 @@ self.addEventListener('push', e=>{
 
 self.addEventListener('notificationclick', e=>{
   e.notification.close();
-  try{ if('clearAppBadge' in self.navigator) self.navigator.clearAppBadge().catch(()=>{}); }catch(err){}
+  // NO borrar badge automáticamente - solo al entrar al chat se borra
+  // Si el badge era 1 y abriste, ahora sí limpiar
+  if(lastBadgeCount<=1){
+    try{ if('clearAppBadge' in self.navigator) self.navigator.clearAppBadge().catch(()=>{}); lastBadgeCount=0; }catch(err){}
+  }
   e.waitUntil(clients.matchAll({type:'window', includeUncontrolled:true}).then(list=>{
     for(let c of list){
       if(c.url.includes('mode=app') || c.url.includes('Vibra') || c.url.includes('github.io')){
