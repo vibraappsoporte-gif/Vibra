@@ -20,5 +20,27 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Radar cerca",
+      "url": "./index.html?mode=app&tab=radar",
+      "description": "Ver personas cerca de ti"
+    },
+    {
+      "name": "Mensajes",
+      "url": "./index.html?mode=app&tab=chats",
+      "description": "Tus chats"
+    },
+    {
+      "name": "Compartir Vibra",
+      "url": "./index.html?share=1",
+      "description": "Invitar amigos"
+    }
+  ],
+  "screenshots": [],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "handle_links": "preferred"
 }

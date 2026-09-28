@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Vibra</title>
-<link rel="manifest" href="./manifest.json">
+<link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlZpYnJhIiwKICAic2hvcnRfbmFtZSI6ICJWaWJyYSIsCiAgImRlc2NyaXB0aW9uIjogIlZpYnJhIC0gSGF6IGFtaWdvcyBjZXJjYSBkZSB0aSIsCiAgInN0YXJ0X3VybCI6ICIuL2luZGV4Lmh0bWw/bW9kZT1hcHAiLAogICJzY29wZSI6ICIuLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBhMGEwYSIsCiAgInRoZW1lX2NvbG9yIjogIiM3YzNhZWQiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICIuL2ljb24tMTkyLnBuZyIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfSwKICAgIHsKICAgICAgInNyYyI6ICIuL2ljb24tNTEyLnBuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0sCiAgInNob3J0Y3V0cyI6IFsKICAgIHsKICAgICAgIm5hbWUiOiAiUmFkYXIgY2VyY2EiLAogICAgICAidXJsIjogIi4vaW5kZXguaHRtbD9tb2RlPWFwcCZ0YWI9cmFkYXIiLAogICAgICAiZGVzY3JpcHRpb24iOiAiVmVyIHBlcnNvbmFzIGNlcmNhIGRlIHRpIgogICAgfSwKICAgIHsKICAgICAgIm5hbWUiOiAiTWVuc2FqZXMiLAogICAgICAidXJsIjogIi4vaW5kZXguaHRtbD9tb2RlPWFwcCZ0YWI9Y2hhdHMiLAogICAgICAiZGVzY3JpcHRpb24iOiAiVHVzIGNoYXRzIgogICAgfSwKICAgIHsKICAgICAgIm5hbWUiOiAiQ29tcGFydGlyIFZpYnJhIiwKICAgICAgInVybCI6ICIuL2luZGV4Lmh0bWw/c2hhcmU9MSIsCiAgICAgICJkZXNjcmlwdGlvbiI6ICJJbnZpdGFyIGFtaWdvcyIKICAgIH0KICBdLAogICJzY3JlZW5zaG90cyI6IFtdLAogICJsYXVuY2hfaGFuZGxlciI6IHsKICAgICJjbGllbnRfbW9kZSI6ICJuYXZpZ2F0ZS1leGlzdGluZyIKICB9LAogICJoYW5kbGVfbGlua3MiOiAicHJlZmVycmVkIgp9">
 <meta name="theme-color" content="#7c3aed">
-<link rel="icon" href="./icon-192.png">
+<link rel="icon" href="data:image/png;base64,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">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
 <style>
 body{margin:0;background:#0a0a0a;font-family:system-ui,sans-serif;color:white}
 .wrap{max-width:760px;margin:0 auto;padding:12px}
@@ -19,14 +20,25 @@ body{margin:0;background:#0a0a0a;font-family:system-ui,sans-serif;color:white}
 .screens img{height:240px;border-radius:16px;border:1px solid #333;flex-shrink:0}
 .btn{width:100%;background:#7c3aed;color:white;border:0;padding:18px;border-radius:16px;font-weight:800;font-size:17px;cursor:pointer}
 .btn-chrome{width:100%;background:#fff;color:#000;border:0;padding:16px;border-radius:16px;font-weight:800;font-size:16px;cursor:pointer;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-share{width:100%;background:#121212;color:#fff;border:1px solid #333;padding:14px;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px}
 .badge{background:#2a2a2a;padding:5px 12px;border-radius:20px;font-size:11px;color:#aaa}
 .longBox{background:#121212;padding:16px;border-radius:14px;font-size:13px;white-space:pre-wrap;line-height:1.6;color:#ccc;border:1px solid #222}
 .fb-warning{background:#ffcc00;color:#000;padding:14px;border-radius:14px;margin-bottom:14px;font-size:13px;font-weight:700;line-height:1.4;display:none}
 .fb-warning b{color:#000}
+/* SPLASH B */
+#loading{position:fixed;inset:0;background:radial-gradient(1200px 600px at 50% -10%, #1a0f2e 0%, #0a0a0a 60%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999}
+.splash-logo{width:96px;height:96px;border-radius:24px;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;animation:pulse 1.6s infinite;box-shadow:0 20px 60px rgba(124,58,237,.5)}
+.splash-logo img{width:100%;height:100%;object-fit:cover;border-radius:24px}
+.splash-title{margin-top:18px;font-size:24px;font-weight:800;letter-spacing:.5px}
+.splash-sub{margin-top:6px;font-size:13px;color:#888}
+.splash-bar{margin-top:20px;width:120px;height:4px;background:#222;border-radius:99px;overflow:hidden}
+.splash-bar>div{height:100%;width:40%;background:#7c3aed;border-radius:99px;animation:load 1.2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes load{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
 </style>
 </head>
 <body>
-<div id="loading" style="padding:40px;text-align:center;color:#666">Cargando Vibra...</div>
+<div id="loading"><div class="splash-logo"><img src="data:image/png;base64,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" onerror="this.style.display='none'; this.parentElement.textContent='V'"></div><div class="splash-title">Vibra</div><div class="splash-sub">Conectando cerca de ti...</div><div class="splash-bar"><div></div></div></div>
 <div id="store" class="wrap" style="display:none"></div>
 <div id="vibraApp" style="display:none;width:100%;height:100vh;background:black"></div>
 <script>
@@ -77,6 +89,7 @@ function showStore(appId){
         <p style="font-size:13px;margin-top:14px;color:#ccc">${esc(a.shortDesc||'')}</p>
         ${isFB ? `<button class="btn-chrome" id="openChromeBtn">🌐 Abrir en Chrome para instalar</button>` : ''}
         <button class="btn" id="installBtn" style="opacity:0.6;margin-top:12px">↓ Instalar Vibra</button>
+        <button class="btn-share" onclick="shareVibra()">📤 Compartir Vibra con amigos</button>
         <div id="fbHelp" style="display:${isFB?'block':'none'};margin-top:10px;font-size:11px;color:#ffcc00;text-align:center">Si no ves el botón de Chrome, toca ⋮ → Abrir en navegador</div>
         <h3 style="font-size:13px;font-weight:700;margin-top:22px;color:white">Screenshots</h3>
         <div class="screens" id="scr"></div>
@@ -235,5 +248,47 @@ if(mode==='app'){
   } else { showStore(id); }
 }
 </script>
+
+<script>
+// A: FCM para app cerrada (parent)
+async function initParentFCM(){
+  try{
+    if(!('Notification' in window)) return;
+    if(Notification.permission!=='granted') return;
+    const messaging = firebase.messaging();
+    let token=null;
+    try{ token = await messaging.getToken({vapidKey: 'BLR8qR6R4XvR9k2xK7_example_replace_with_your_vapid'}); }catch(e){ token = await messaging.getToken().catch(()=>null); }
+    if(token){
+      try{
+        let uid = localStorage.getItem('vibra_parent_uid') || 'parent_'+Math.random().toString(36).slice(2,9);
+        localStorage.setItem('vibra_parent_uid', uid);
+        await db.collection('vibra_tokens').doc(uid).set({token, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), type:'parent', ua: navigator.userAgent}, {merge:true});
+        console.log('Parent FCM token guardado', token.slice(0,20));
+      }catch(e){}
+    }
+    messaging.onMessage(payload=>{
+      console.log('Parent FCM foreground', payload);
+      try{ if('setAppBadge' in navigator && payload.data?.count) navigator.setAppBadge(parseInt(payload.data.count)); }catch(e){}
+    });
+  }catch(e){ console.log('Parent FCM err', e); }
+}
+if('Notification' in window && Notification.permission==='granted'){ setTimeout(initParentFCM, 2000); }
+
+// C: Share function
+function shareVibra(){
+  const url = window.location.origin + window.location.pathname;
+  const text = '🔥 Descarga Vibra - haz amigos cerca de ti. Radar por ciudad, chats reales y 100% privada. Instálala aquí: ';
+  if(navigator.share){
+    navigator.share({title:'Vibra - Haz amigos cerca', text: text, url: url}).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(text + url).then(()=>{
+      alert('¡Link copiado! Compártelo en WhatsApp, Facebook o Instagram: \n\n' + url);
+    }).catch(()=>{
+      prompt('Copia este link:', url);
+    });
+  }
+}
+</script>
+
 </body>
 </html>
