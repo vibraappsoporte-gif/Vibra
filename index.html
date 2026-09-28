@@ -18,8 +18,11 @@ body{margin:0;background:#0a0a0a;font-family:system-ui,sans-serif;color:white}
 .screens{display:flex;gap:10px;overflow:auto;padding:12px 0}
 .screens img{height:240px;border-radius:16px;border:1px solid #333;flex-shrink:0}
 .btn{width:100%;background:#7c3aed;color:white;border:0;padding:18px;border-radius:16px;font-weight:800;font-size:17px;cursor:pointer}
+.btn-chrome{width:100%;background:#fff;color:#000;border:0;padding:16px;border-radius:16px;font-weight:800;font-size:16px;cursor:pointer;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px}
 .badge{background:#2a2a2a;padding:5px 12px;border-radius:20px;font-size:11px;color:#aaa}
 .longBox{background:#121212;padding:16px;border-radius:14px;font-size:13px;white-space:pre-wrap;line-height:1.6;color:#ccc;border:1px solid #222}
+.fb-warning{background:#ffcc00;color:#000;padding:14px;border-radius:14px;margin-bottom:14px;font-size:13px;font-weight:700;line-height:1.4;display:none}
+.fb-warning b{color:#000}
 </style>
 </head>
 <body>
@@ -33,9 +36,14 @@ var db=firebase.firestore();
 function esc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').then(r=>console.log('SW OK')).catch(e=>console.log('SW FAIL',e)); }
 
+// DETECTAR FACEBOOK / MESSENGER / INSTAGRAM
+function isFacebookBrowser(){
+  var ua = navigator.userAgent || navigator.vendor || window.opera;
+  return (ua.indexOf("FBAN")>-1) || (ua.indexOf("FBAV")>-1) || (ua.indexOf("FBAN")>-1) || (ua.indexOf("FB_IAB")>-1) || (ua.indexOf("FB4A")>-1) || (ua.indexOf("FBAN")>-1) || (ua.indexOf("Messenger")>-1) || (ua.indexOf("Instagram")>-1) || window.location.href.indexOf("fbclid")>-1;
+}
+
 var deferredPrompt=null;
 window.addEventListener('beforeinstallprompt', (e)=>{
-  console.log('beforeinstallprompt capturado - AHORA SI');
   e.preventDefault();
   deferredPrompt=e;
   var b=document.getElementById('installBtn');
@@ -56,14 +64,18 @@ function showStore(appId){
     document.getElementById('store').style.display='block';
     var c=document.getElementById('store');
     var icon=a.iconBase64?`<img src="${a.iconBase64}">`:'';
+    var isFB = isFacebookBrowser();
     c.innerHTML=`
+      ${isFB ? `<div class="fb-warning" id="fbWarn" style="display:block">⚠️ Estás abriendo desde Facebook Lite / Facebook / Messenger<br><br>Facebook bloquea la instalación.<br><br><b>1.</b> Toca <b>⋮</b> arriba a la derecha<br><b>2.</b> Toca <b>"Abrir en navegador externo"</b> o <b>"Abrir en Chrome"</b><br><br>Ahí sí te saldrá "Instalar aplicación"</div>` : ''}
       <div class="card">
         <div class="row"><div class="icon">${icon}</div>
         <div style="flex:1"><h2 style="margin:0;font-size:22px;font-weight:800;color:white">${esc(a.name)}</h2>
         <div style="font-size:12px;color:#888">By ${esc(a.creatorName||'Orlando Claro')}</div>
-        <div style="margin-top:8px;display:flex;gap:6px"><span class="badge">${esc(a.version||'v1.7')}</span><span class="badge">${esc(a.packageName||'com.vibra.app')}</span></div></div></div>
+        <div style="margin-top:8px;display:flex;gap:6px"><span class="badge">${esc(a.version||'v2.1')}</span><span class="badge">${esc(a.packageName||'com.vibra.app')}</span></div></div></div>
         <p style="font-size:13px;margin-top:14px;color:#ccc">${esc(a.shortDesc||'')}</p>
-        <button class="btn" id="installBtn" style="opacity:0.6">↓ Instalar Vibra</button>
+        ${isFB ? `<button class="btn-chrome" id="openChromeBtn">🌐 Abrir en Chrome para instalar</button>` : ''}
+        <button class="btn" id="installBtn" style="opacity:0.6;margin-top:12px">↓ Instalar Vibra</button>
+        <div id="fbHelp" style="display:${isFB?'block':'none'};margin-top:10px;font-size:11px;color:#ffcc00;text-align:center">Si no ves el botón de Chrome, toca ⋮ → Abrir en navegador</div>
         <h3 style="font-size:13px;font-weight:700;margin-top:22px;color:white">Screenshots</h3>
         <div class="screens" id="scr"></div>
         <div style="margin-top:18px"><div style="font-size:12px;font-weight:700;color:white">Descripción</div><div class="longBox">${esc(a.longDesc||'')}</div></div>
@@ -72,12 +84,30 @@ function showStore(appId){
     var scr=document.getElementById('scr');
     (a.screenshots||[]).forEach(src=>{ var img=document.createElement('img'); img.src=src; scr.appendChild(img); });
     document.title=a.name+' - Instalar';
+
+    var openChromeBtn=document.getElementById('openChromeBtn');
+    if(openChromeBtn){
+      openChromeBtn.onclick=function(){
+        var url = window.location.href;
+        // Intentar abrir en Chrome con intent
+        var intentUrl = "intent://" + url.replace(/^https?:\/\//,'') + "#Intent;scheme=https;package=com.android.chrome;end";
+        try{ window.location.href = intentUrl; }catch(e){}
+        setTimeout(function(){
+          // Fallback: copiar link
+          alert('Si no abrió Chrome automáticamente:\n\n1. Toca ⋮ arriba derecha\n2. Abrir en navegador externo / Abrir en Chrome');
+        }, 1000);
+      };
+    }
     
     var btn=document.getElementById('installBtn');
-    // Si el prompt ya llegó antes de crear el botón, actualizarlo
     if(deferredPrompt){ btn.textContent='↓ Instalar Vibra'; btn.style.opacity='1'; }
     
     btn.onclick=function(){ 
+      if(isFacebookBrowser()){
+        alert('Estás en Facebook / Messenger, no deja instalar.\n\nToca ⋮ arriba derecha → Abrir en navegador externo o Abrir en Chrome\n\nLuego te saldrá Instalar');
+        if(openChromeBtn) openChromeBtn.click();
+        return;
+      }
       if(deferredPrompt){ 
         deferredPrompt.prompt(); 
         deferredPrompt.userChoice.then(ch=>{
@@ -85,11 +115,15 @@ function showStore(appId){
           deferredPrompt=null;
         }); 
       } else {
-        // Fallback si Chrome no disparó el evento (porque ya está instalada o la descartaste)
         if(window.matchMedia('(display-mode: standalone)').matches){
           alert('Vibra ya está instalada');
         } else {
-          alert('Vibra YA está instalada (por eso no sale el popup).\n\n1. Mantén presionado el icono morado de Vibra en tu menú → Desinstalar\n2. Ve a chrome://apps → si aparece Vibra → Desinstalar\n3. Recarga esta página y ya te saldrá el popup Instalar');
+          // Si ya está instalada pero en otro perfil
+          if(navigator.userAgent.indexOf('Chrome')>-1){
+            alert('Si no sale el popup:\n\n1. Ya está instalada - busca el icono morado\n2. O toca ⋮ → Instalar app → Instalar');
+          } else {
+            alert('Abre este link en Chrome, no en Facebook Lite.\n\nToca ⋮ → Abrir en Chrome');
+          }
         }
       }
     };
@@ -104,7 +138,7 @@ function showApp(appId){
     if(a.content && a.content.length>50){
       document.getElementById('loading').style.display='none';
       var appDiv=document.getElementById('vibraApp'); appDiv.style.display='block'; document.title=a.name||'Vibra';
-      var ifr=document.createElement('iframe'); ifr.id='vibraFrame'; ifr.style.width='100%'; ifr.style.height='100vh'; ifr.style.border='0'; ifr.setAttribute('allow','notifications; fullscreen'); appDiv.appendChild(ifr);
+      var ifr=document.createElement('iframe'); ifr.id='vibraFrame'; ifr.style.width='100%'; ifr.style.height='100vh'; ifr.style.border='0'; ifr.setAttribute('allow','notifications; fullscreen; autoplay'); appDiv.appendChild(ifr);
       try{ ifr.srcdoc=a.content; }catch(e){ var blob=new Blob([a.content],{type:'text/html'}); ifr.src=URL.createObjectURL(blob); }
       return;
     }
@@ -113,15 +147,11 @@ function showApp(appId){
 }
 
 if(mode==='app'){
-  // MODO APP INSTALADA - debe abrir la de Firebase (la que subes por APK Simple)
-  if(id){
-    showApp(id);
-  } else {
-    // Intenta con localStorage, si no, con la última publicada en Firebase
+  if(id){ showApp(id); }
+  else {
     try{ var saved=localStorage.getItem('lastVibraId'); if(saved) id=saved; }catch(e){}
-    if(id){
-      showApp(id);
-    } else {
+    if(id){ showApp(id); }
+    else {
       db.collection('apps').orderBy('createdAt','desc').limit(1).get().then(snap=>{
         if(snap.empty){ document.getElementById('loading').innerHTML='No hay apps en Firebase'; return; }
         var d=snap.docs[0]; showApp(d.id);
@@ -129,7 +159,6 @@ if(mode==='app'){
     }
   }
 } else {
-  // MODO TIENDA / INSTALADOR
   if(!id){
     db.collection('apps').orderBy('createdAt','desc').limit(1).get().then(snap=>{
       if(snap.empty){ document.getElementById('loading').innerHTML='No hay apps'; return; }
@@ -137,9 +166,7 @@ if(mode==='app'){
       try{ localStorage.setItem('lastVibraId', id); }catch(e){}
       showStore(id);
     });
-  } else {
-    showStore(id);
-  }
+  } else { showStore(id); }
 }
 </script>
 </body>
