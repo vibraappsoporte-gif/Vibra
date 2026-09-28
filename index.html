@@ -86,16 +86,48 @@ function showStore(appId){
     document.title=a.name+' - Instalar';
 
     var openChromeBtn=document.getElementById('openChromeBtn');
+    var attemptedAutoOpen = false;
+    function tryOpenChrome(){
+      if(attemptedAutoOpen) return;
+      attemptedAutoOpen = true;
+      var url = window.location.href;
+      var intentUrl = "intent://" + url.replace(/^https?:\/\//,'') + "#Intent;scheme=https;package=com.android.chrome;end";
+      var chromeUrl = "googlechrome://navigate?url=" + encodeURIComponent(url);
+      
+      // Intento 1: intent (más efectivo en Android)
+      try{
+        var a = document.createElement('a');
+        a.href = intentUrl;
+        a.style.display='none';
+        document.body.appendChild(a);
+        a.click();
+        // También probar con location
+        setTimeout(function(){ try{ window.location.href = intentUrl; }catch(e){} }, 200);
+        // Intento 2: esquema chrome
+        setTimeout(function(){ try{ window.location.href = chromeUrl; }catch(e){} }, 600);
+      }catch(e){
+        try{ window.location.href = intentUrl; }catch(e2){}
+      }
+      
+      // Si después de 2.5s sigue en FB, no se pudo, mostrar mensaje
+      setTimeout(function(){
+        if(isFacebookBrowser()){
+          // sigue en FB, no abrió
+          var warn = document.getElementById('fbWarn');
+          if(warn) warn.innerHTML += '<br><br><div style="background:#000;color:#ffcc00;padding:10px;border-radius:8px">Si no abrió solo, toca el botón de abajo o toca ⋮ → Abrir en navegador externo</div>';
+        }
+      }, 2500);
+    }
+
+    // AUTO-INTENTO al cargar si viene de Facebook
+    if(isFB){
+      // Esperar 800ms a que cargue y disparar
+      setTimeout(tryOpenChrome, 800);
+    }
+
     if(openChromeBtn){
       openChromeBtn.onclick=function(){
-        var url = window.location.href;
-        // Intentar abrir en Chrome con intent
-        var intentUrl = "intent://" + url.replace(/^https?:\/\//,'') + "#Intent;scheme=https;package=com.android.chrome;end";
-        try{ window.location.href = intentUrl; }catch(e){}
-        setTimeout(function(){
-          // Fallback: copiar link
-          alert('Si no abrió Chrome automáticamente:\n\n1. Toca ⋮ arriba derecha\n2. Abrir en navegador externo / Abrir en Chrome');
-        }, 1000);
+        tryOpenChrome();
       };
     }
     
