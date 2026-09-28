@@ -1,13 +1,24 @@
 {
   "name": "Vibra",
   "short_name": "Vibra",
-  "description": "Chat cerca de ti",
-  "start_url": "./install.html?mode=app",
+  "description": "La app para hacer amigos cerca",
+  "start_url": "./index.html?mode=app",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#7c3aed",
   "icons": [
-    {"src": "./icon-192.png", "sizes": "192x192", "type": "image/png"},
-    {"src": "./icon-512.png", "sizes": "512x512", "type": "image/png"}
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
