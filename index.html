@@ -31,15 +31,15 @@ var cfg={apiKey:"AIzaSyA3f6NfbDGpr8JsSybpn5XdmzGCmJPQTqY",authDomain:"apk-simple
 firebase.initializeApp(cfg);
 var db=firebase.firestore();
 function esc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').then(r=>console.log('SW ok')).catch(e=>console.log('SW fail',e)); }
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').then(r=>console.log('SW OK')).catch(e=>console.log('SW FAIL',e)); }
 
 var deferredPrompt=null;
 window.addEventListener('beforeinstallprompt', (e)=>{
-  console.log('beforeinstallprompt OK');
+  console.log('beforeinstallprompt capturado - AHORA SI');
   e.preventDefault();
   deferredPrompt=e;
   var b=document.getElementById('installBtn');
-  if(b){ b.style.display='block'; b.textContent='↓ Instalar Vibra'; }
+  if(b){ b.textContent='↓ Instalar Vibra'; b.style.opacity='1'; }
 });
 
 var params=new URLSearchParams(location.search);
@@ -48,37 +48,10 @@ var mode=params.get('mode');
 if(id){ try{ localStorage.setItem('lastVibraId', id); }catch(e){} }
 if(!id){ try{ id=localStorage.getItem('lastVibraId'); }catch(e){} }
 
-function injectManifest(a){
-  try{
-    var man={
-      name: a.name||'Vibra',
-      short_name: (a.name||'Vibra').substring(0,12),
-      description: a.shortDesc||'VIBRA',
-      start_url: './index.html?mode=app&id='+a.id,
-      scope: './',
-      display: 'standalone',
-      background_color: '#0a0a0a',
-      theme_color: '#7c3aed',
-      icons: a.iconBase64 ? [
-        {src: a.iconBase64, sizes: '192x192', type: 'image/png'},
-        {src: a.iconBase64, sizes: '512x512', type: 'image/png'}
-      ] : [
-        {src: './icon-192.png', sizes: '192x192', type: 'image/png'},
-        {src: './icon-512.png', sizes: '512x512', type: 'image/png'}
-      ]
-    };
-    var blob=new Blob([JSON.stringify(man)],{type:'application/json'});
-    var url=URL.createObjectURL(blob);
-    var old=document.querySelector('link[rel="manifest"]');
-    if(old) old.href=url; else { var l=document.createElement('link'); l.rel='manifest'; l.href=url; document.head.appendChild(l); }
-  }catch(e){ console.log('manifest inject fail',e); }
-}
-
 function showStore(appId){
   db.collection('apps').doc(appId).get().then(doc=>{
     if(!doc.exists){ document.getElementById('loading').innerHTML='App no encontrada'; return; }
-    var a=doc.data(); a.id=appId;
-    injectManifest(a);
+    var a=doc.data();
     document.getElementById('loading').style.display='none';
     document.getElementById('store').style.display='block';
     var c=document.getElementById('store');
@@ -90,8 +63,7 @@ function showStore(appId){
         <div style="font-size:12px;color:#888">By ${esc(a.creatorName||'Orlando Claro')}</div>
         <div style="margin-top:8px;display:flex;gap:6px"><span class="badge">${esc(a.version||'v1.7')}</span><span class="badge">${esc(a.packageName||'com.vibra.app')}</span></div></div></div>
         <p style="font-size:13px;margin-top:14px;color:#ccc">${esc(a.shortDesc||'')}</p>
-        <button class="btn" id="installBtn" style="display:none">↓ Instalar Vibra</button>
-        <button class="btn" id="manualBtn" style="background:#222;margin-top:10px">⋮ Instalar desde menú</button>
+        <button class="btn" id="installBtn" style="opacity:0.6">↓ Instalar Vibra</button>
         <h3 style="font-size:13px;font-weight:700;margin-top:22px;color:white">Screenshots</h3>
         <div class="screens" id="scr"></div>
         <div style="margin-top:18px"><div style="font-size:12px;font-weight:700;color:white">Descripción</div><div class="longBox">${esc(a.longDesc||'')}</div></div>
@@ -102,26 +74,24 @@ function showStore(appId){
     document.title=a.name+' - Instalar';
     
     var btn=document.getElementById('installBtn');
-    var manual=document.getElementById('manualBtn');
+    // Si el prompt ya llegó antes de crear el botón, actualizarlo
+    if(deferredPrompt){ btn.textContent='↓ Instalar Vibra'; btn.style.opacity='1'; }
     
-    // Si el evento ya llegó antes, mostrar botón
-    if(deferredPrompt){ btn.style.display='block'; manual.style.display='none'; }
-    else { 
-      // Esperar 1.5s por si el evento tarda
-      setTimeout(()=>{ if(deferredPrompt){ btn.style.display='block'; manual.style.display='none'; } else { btn.style.display='none'; manual.style.display='block'; } },1500);
-    }
-
     btn.onclick=function(){ 
       if(deferredPrompt){ 
         deferredPrompt.prompt(); 
         deferredPrompt.userChoice.then(ch=>{
-          if(ch.outcome==='accepted'){ btn.textContent='✅ Instalada!'; }
+          if(ch.outcome==='accepted'){ btn.textContent='✅ ¡Instalada! Busca el icono en tu inicio'; }
           deferredPrompt=null;
         }); 
+      } else {
+        // Fallback si Chrome no disparó el evento (porque ya está instalada o la descartaste)
+        if(window.matchMedia('(display-mode: standalone)').matches){
+          alert('Vibra ya está instalada');
+        } else {
+          alert('Toca ⋮ (arriba derecha) → Instalar app → Instalar\n\nSi no sale, asegúrate de abrir en Chrome, no en Facebook/Messenger');
+        }
       }
-    };
-    manual.onclick=function(){
-      alert('En Chrome toca ⋮ (arriba derecha) → Instalar app → Instalar');
     };
   });
 }
