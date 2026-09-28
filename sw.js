@@ -2,7 +2,7 @@ self.addEventListener('install', e=>{ self.skipWaiting(); });
 self.addEventListener('activate', e=>{ self.clients.claim(); });
 
 self.addEventListener('message', e=>{
-  if(e.data && e.data.type==='SET_BADGE'){
+  if(e.data && (e.data.type==='SET_BADGE' || e.data.type==='VIBRA_BADGE')){
     if('setAppBadge' in self.navigator){
       if(e.data.count>0) self.navigator.setAppBadge(e.data.count).catch(()=>{});
       else if('clearAppBadge' in self.navigator) self.navigator.clearAppBadge().catch(()=>{});
@@ -16,7 +16,7 @@ self.addEventListener('message', e=>{
 self.addEventListener('notificationclick', e=>{
   e.notification.close();
   e.waitUntil(clients.matchAll({type:'window'}).then(list=>{
-    for(let c of list) if(c.url.includes('Vibra')) return c.focus();
+    for(let c of list) if(c.url.includes('Vibra') || c.url.includes('index.html')) return c.focus();
     return clients.openWindow('./index.html?mode=app');
   }));
 });
