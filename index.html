@@ -112,17 +112,34 @@ function showApp(appId){
   });
 }
 
-if(!id){
-  db.collection('apps').orderBy('createdAt','desc').limit(1).get().then(snap=>{
-    if(snap.empty){ document.getElementById('loading').innerHTML='No hay apps'; return; }
-    var d=snap.docs[0]; id=d.id;
-    try{ localStorage.setItem('lastVibraId', id); }catch(e){}
-    if(mode==='app'){ showApp(id); } else { showStore(id); }
-  });
-} else if(mode==='app'){
-  showApp(id);
+if(mode==='app'){
+  // MODO APP INSTALADA - debe abrir la de Firebase (la que subes por APK Simple)
+  if(id){
+    showApp(id);
+  } else {
+    // Intenta con localStorage, si no, con la última publicada en Firebase
+    try{ var saved=localStorage.getItem('lastVibraId'); if(saved) id=saved; }catch(e){}
+    if(id){
+      showApp(id);
+    } else {
+      db.collection('apps').orderBy('createdAt','desc').limit(1).get().then(snap=>{
+        if(snap.empty){ document.getElementById('loading').innerHTML='No hay apps en Firebase'; return; }
+        var d=snap.docs[0]; showApp(d.id);
+      });
+    }
+  }
 } else {
-  showStore(id);
+  // MODO TIENDA / INSTALADOR
+  if(!id){
+    db.collection('apps').orderBy('createdAt','desc').limit(1).get().then(snap=>{
+      if(snap.empty){ document.getElementById('loading').innerHTML='No hay apps'; return; }
+      var d=snap.docs[0]; id=d.id;
+      try{ localStorage.setItem('lastVibraId', id); }catch(e){}
+      showStore(id);
+    });
+  } else {
+    showStore(id);
+  }
 }
 </script>
 </body>
