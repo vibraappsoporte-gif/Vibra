@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vibra</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#7c3aed">
+<link rel="icon" href="./icon-192.png">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<style>
+body{margin:0;background:#0a0a0a;font-family:system-ui,sans-serif;color:white}
+.wrap{max-width:760px;margin:0 auto;padding:12px}
+.card{background:#1a1a1a;border-radius:20px;padding:20px;border:1px solid #2a2a2a}
+.icon{width:80px;height:80px;border-radius:20px;background:#2a2a2a;overflow:hidden}
+.icon img{width:100%;height:100%;object-fit:cover}
+.row{display:flex;gap:16px}
+.screens{display:flex;gap:10px;overflow:auto;padding:12px 0}
+.screens img{height:240px;border-radius:16px;border:1px solid #333;flex-shrink:0}
+.btn{width:100%;background:#7c3aed;color:white;border:0;padding:18px;border-radius:16px;font-weight:800;font-size:17px;cursor:pointer}
+.badge{background:#2a2a2a;padding:5px 12px;border-radius:20px;font-size:11px;color:#aaa}
+.longBox{background:#121212;padding:16px;border-radius:14px;font-size:13px;white-space:pre-wrap;line-height:1.6;color:#ccc;border:1px solid #222}
+.hint{background:#222;color:white;padding:12px;border-radius:12px;font-size:12px;margin-top:12px}
+.ok{background:#166534;color:white;padding:12px;border-radius:12px;font-size:12px;margin-top:12px;font-weight:600}
+</style>
+</head>
+<body>
+<div id="loading" style="padding:40px;text-align:center;color:#666">Cargando Vibra...</div>
+<div id="store" class="wrap" style="display:none"></div>
+<div id="vibraApp" style="display:none;width:100%;height:100vh;background:black"></div>
+
+<script>
+var cfg={apiKey:"AIzaSyA3f6NfbDGpr8JsSybpn5XdmzGCmJPQTqY",authDomain:"apk-simple.firebaseapp.com",projectId:"apk-simple",storageBucket:"apk-simple.firebasestorage.app",messagingSenderId:"184380088864",appId:"1:184380088864:web:3f0e17ee08fe0cdbb61245"};
+firebase.initializeApp(cfg);
+var db=firebase.firestore();
+function esc(s){var d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js').catch(()=>{}); }
+var deferredPrompt=null;
+window.addEventListener('beforeinstallprompt', e=>{ console.log('beforeinstallprompt capturado'); e.preventDefault(); deferredPrompt=e; var b=document.getElementById('installBtn'); if(b){ b.textContent='↓ Instalar Vibra'; b.style.background='#7c3aed'; b.disabled=false; } });
+window.addEventListener('appinstalled', ()=>{ console.log('App instalada'); deferredPrompt=null; });
+
+var params=new URLSearchParams(location.search);
+var id=params.get('id');
+var mode=params.get('mode');
+if(id){ try{ localStorage.setItem('lastVibraId', id); }catch(e){} }
+if(!id){ try{ id=localStorage.getItem('lastVibraId'); }catch(e){} }
+
+function showStore(appId){
+  db.collection('apps').doc(appId).get().then(doc=>{
+    if(!doc.exists){ document.getElementById('loading').innerHTML='App no encontrada'; return; }
+    var a=doc.data();
+    document.getElementById('loading').style.display='none';
+    document.getElementById('store').style.display='block';
+    var c=document.getElementById('store');
+    var icon=a.iconBase64?`<img src="${a.iconBase64}">`:'';
+    c.innerHTML=`
+      <div class="card">
+        <div class="row"><div class="icon">${icon}</div>
+        <div style="flex:1"><h2 style="margin:0;font-size:22px;font-weight:800;color:white">${esc(a.name)}</h2>
+        <div style="font-size:12px;color:#888">By ${esc(a.creatorName||'Orlando Claro')}</div>
+        <div style="margin-top:8px;display:flex;gap:6px"><span class="badge">${esc(a.version||'v1.2')}</span><span class="badge">${esc(a.packageName||'com.vibra.app')}</span></div></div></div>
+        <p style="font-size:13px;margin-top:14px;color:#ccc">${esc(a.shortDesc||'')}</p>
+        <button class="btn" id="installBtn">↓ Instalar Vibra</button>
+        <div id="hint" style="display:none"></div>
+        <h3 style="font-size:13px;font-weight:700;margin-top:22px;color:white">Screenshots</h3>
+        <div class="screens" id="scr"></div>
+        <div style="margin-top:18px"><div style="font-size:12px;font-weight:700;color:white">Descripción</div><div class="longBox">${esc(a.longDesc||'')}</div></div>
+        <div style="text-align:center;margin-top:12px;font-size:10px;color:#555">Instala desde Chrome para quitar el aviso de Chrome</div>
+      </div>
+    `;
+    var scr=document.getElementById('scr');
+    (a.screenshots||[]).forEach(src=>{ var img=document.createElement('img'); img.src=src; scr.appendChild(img); });
+    document.title=a.name+' - Instalar';
+    var btn=document.getElementById('installBtn'); var hint=document.getElementById('hint');
+    btn.onclick=function(){ 
+      if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(ch=>{ if(ch.outcome==='accepted'){ hint.innerHTML='<div class="ok">✅ ¡Vibra instalada! Busca el icono morado, ya sin el de Chrome.</div>'; } hint.style.display='block'; deferredPrompt=null; }); } 
+      else { hint.innerHTML='<div class="hint">Para quitar el icono de Chrome:<br>1. Abre este link en <b>Google Chrome</b> (no dentro de tu builder)<br>2. Menú ⋮ → <b>Instalar app</b><br>3. Se instalará como app real sin aviso de Chrome</div>'; hint.style.display='block'; } 
+    };
+  });
+}
+
+function showApp(appId){
+  db.collection('apps').doc(appId).get().then(doc=>{
+    if(!doc.exists){ showStore(appId); return; }
+    var a=doc.data();
+    if(a.contentType==='url' && a.content){ location.href=a.content; return; }
+    if(a.content && a.content.length>50){
+      document.getElementById('loading').style.display='none';
+      var appDiv=document.getElementById('vibraApp'); appDiv.style.display='block'; document.title=a.name||'Vibra';
+      var ifr=document.createElement('iframe'); ifr.id='vibraFrame'; ifr.style.width='100%'; ifr.style.height='100vh'; ifr.style.border='0'; ifr.setAttribute('allow','notifications; fullscreen'); appDiv.appendChild(ifr);
+      try{ ifr.srcdoc=a.content; }catch(e){ var blob=new Blob([a.content],{type:'text/html'}); ifr.src=URL.createObjectURL(blob); }
+      return;
+    }
+    showStore(appId);
+  });
+}
+
+if(!id){
+  db.collection('apps').orderBy('createdAt','desc').limit(1).get().then(snap=>{
+    if(snap.empty){ document.getElementById('loading').innerHTML='No hay apps'; return; }
+    var d=snap.docs[0]; id=d.id;
+    try{ localStorage.setItem('lastVibraId', id); }catch(e){}
+    if(mode==='app'){ showApp(id); } else { showStore(id); }
+  });
+} else if(mode==='app'){
+  showApp(id);
+} else {
+  showStore(id);
+}
+</script>
+</body>
+</html>

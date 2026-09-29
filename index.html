@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Vibra</title>
-<link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlZpYnJhIiwKICAic2hvcnRfbmFtZSI6ICJWaWJyYSIsCiAgImRlc2NyaXB0aW9uIjogIlZpYnJhIC0gSGF6IGFtaWdvcyBjZXJjYSBkZSB0aSIsCiAgInN0YXJ0X3VybCI6ICIuL2luZGV4Lmh0bWw/bW9kZT1hcHAiLAogICJzY29wZSI6ICIuLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBhMGEwYSIsCiAgInRoZW1lX2NvbG9yIjogIiM3YzNhZWQiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICIuL2ljb24tMTkyLnBuZyIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfSwKICAgIHsKICAgICAgInNyYyI6ICIuL2ljb24tNTEyLnBuZyIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInB1cnBvc2UiOiAiYW55IG1hc2thYmxlIgogICAgfQogIF0sCiAgInNob3J0Y3V0cyI6IFsKICAgIHsKICAgICAgIm5hbWUiOiAiUmFkYXIgY2VyY2EiLAogICAgICAidXJsIjogIi4vaW5kZXguaHRtbD9tb2RlPWFwcCZ0YWI9cmFkYXIiLAogICAgICAiZGVzY3JpcHRpb24iOiAiVmVyIHBlcnNvbmFzIGNlcmNhIGRlIHRpIgogICAgfSwKICAgIHsKICAgICAgIm5hbWUiOiAiTWVuc2FqZXMiLAogICAgICAidXJsIjogIi4vaW5kZXguaHRtbD9tb2RlPWFwcCZ0YWI9Y2hhdHMiLAogICAgICAiZGVzY3JpcHRpb24iOiAiVHVzIGNoYXRzIgogICAgfSwKICAgIHsKICAgICAgIm5hbWUiOiAiQ29tcGFydGlyIFZpYnJhIiwKICAgICAgInVybCI6ICIuL2luZGV4Lmh0bWw/c2hhcmU9MSIsCiAgICAgICJkZXNjcmlwdGlvbiI6ICJJbnZpdGFyIGFtaWdvcyIKICAgIH0KICBdLAogICJzY3JlZW5zaG90cyI6IFtdLAogICJsYXVuY2hfaGFuZGxlciI6IHsKICAgICJjbGllbnRfbW9kZSI6ICJuYXZpZ2F0ZS1leGlzdGluZyIKICB9LAogICJoYW5kbGVfbGlua3MiOiAicHJlZmVycmVkIgp9">
+<link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#7c3aed">
-<link rel="icon" href="data:image/png;base64,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">
+<link rel="icon" href="./icon-192.png">
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
@@ -288,6 +288,59 @@ function shareVibra(){
     });
   }
 }
+</script>
+
+
+<script>
+// GLOBITO en icono - Badge API puente entre iframe y PWA
+(function(){
+  function setVibraBadge(count){
+    try{
+      count = parseInt(count)||0;
+      // 1. Intentar en ventana principal (PWA)
+      if('setAppBadge' in navigator){
+        if(count>0) navigator.setAppBadge(count).catch(()=>{});
+        else if('clearAppBadge' in navigator) navigator.clearAppBadge().catch(()=>{});
+      }
+      // 2. Mandar al Service Worker para que lo ponga aunque app esté cerrada
+      if(navigator.serviceWorker && navigator.serviceWorker.controller){
+        navigator.serviceWorker.controller.postMessage({type:'VIBRA_BADGE', count: count});
+      }
+      // 3. Guardar para cuando SW despierte
+      if(navigator.serviceWorker && navigator.serviceWorker.ready){
+        navigator.serviceWorker.ready.then(reg=>{
+          if(reg.active) reg.active.postMessage({type:'VIBRA_BADGE', count: count});
+        });
+      }
+    }catch(e){ console.log('badge err', e); }
+  }
+  function clearVibraBadge(){
+    setVibraBadge(0);
+    try{
+      if(navigator.serviceWorker && navigator.serviceWorker.controller){
+        navigator.serviceWorker.controller.postMessage({type:'CLEAR_BADGE'});
+      }
+    }catch(e){}
+  }
+  window.setVibraBadge = setVibraBadge;
+  window.clearVibraBadge = clearVibraBadge;
+
+  // Escuchar mensajes del iframe (la app Vibra real)
+  window.addEventListener('message', function(e){
+    try{
+      let d = e.data || {};
+      if(d.type==='VIBRA_BADGE' || d.type==='SET_BADGE'){
+        setVibraBadge(d.count||0);
+      }
+      if(d.type==='CLEAR_BADGE'){
+        clearVibraBadge();
+      }
+      if(d.type==='VIBRA_NEW_MESSAGE'){
+        setVibraBadge(d.count||1);
+      }
+    }catch(err){}
+  });
+})();
 </script>
 
 </body>
