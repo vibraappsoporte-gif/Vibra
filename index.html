@@ -251,28 +251,83 @@ if(mode==='app'){
 
 <script>
 // A: FCM para app cerrada (parent)
+// REGISTRAR SW PARA BACKGROUND (obligatorio para globito con app cerrada)
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').then(reg=>{
+    console.log('SW Vibra registrado', reg.scope);
+  }).catch(e=>console.log('SW error', e));
+}
+
+// SOLICITAR PERMISO Y GUARDAR TOKEN FCM - ESTO HACE QUE SUENE CON APP CERRADA
 async function initParentFCM(){
   try{
     if(!('Notification' in window)) return;
-    if(Notification.permission!=='granted') return;
+    // Pedir permiso si no está concedido
+    if(Notification.permission!=='granted'){
+      let perm = await Notification.requestPermission();
+      if(perm!=='granted') return;
+    }
     const messaging = firebase.messaging();
+    // IMPORTANTE: Reemplaza esta VAPID KEY por la tuya de Firebase Console > Configuración > Cloud Messaging > Certificados push web
+    const VAPID_KEY = 'BA743oP159RK0utN1mfZc9K_q9sFTpYgpC5dekvaT7ELFxF-RIDxoQj5DCGh6dHm3x0qTBBugzAXTPmSFLhDy-E';
     let token=null;
-    try{ token = await messaging.getToken({vapidKey: 'BLR8qR6R4XvR9k2xK7_example_replace_with_your_vapid'}); }catch(e){ token = await messaging.getToken().catch(()=>null); }
+    try{ 
+      token = await messaging.getToken({vapidKey: VAPID_KEY}); 
+    }catch(e){ 
+      console.log('VAPID error, intentando sin key', e);
+      try{ token = await messaging.getToken(); }catch(e2){ console.log('FCM token error', e2); }
+    }
     if(token){
       try{
-        let uid = localStorage.getItem('vibra_parent_uid') || 'parent_'+Math.random().toString(36).slice(2,9);
+        let uid = localStorage.getItem('vibra_parent_uid');
+        // Intentar usar uid de Firebase Auth si existe
+        try{
+          let authUid = window.firebase.auth()?.currentUser?.uid;
+          if(authUid) uid = authUid;
+        }catch(e){}
+        if(!uid) uid = 'parent_'+Math.random().toString(36).slice(2,9);
         localStorage.setItem('vibra_parent_uid', uid);
-        await db.collection('vibra_tokens').doc(uid).set({token, updatedAt: firebase.firestore.FieldValue.serverTimestamp(), type:'parent', ua: navigator.userAgent}, {merge:true});
-        console.log('Parent FCM token guardado', token.slice(0,20));
-      }catch(e){}
+        await db.collection('vibra_tokens').doc(uid).set({
+          token, 
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp(), 
+          type:'parent', 
+          ua: navigator.userAgent,
+          platform: 'web'
+        }, {merge:true});
+        console.log('✅ FCM token guardado para background', token.slice(0,20));
+        // También guardar en users si hay auth
+        try{
+          let authUid = window.firebase.auth()?.currentUser?.uid;
+          if(authUid){
+            await db.collection('users').doc(authUid).set({fcmToken: token, lastTokenUpdate: firebase.firestore.FieldValue.serverTimestamp()}, {merge:true});
+          }
+        }catch(e){}
+      }catch(e){ console.log('Error guardando token', e); }
     }
+    // Mensaje en primer plano (app abierta)
     messaging.onMessage(payload=>{
-      console.log('Parent FCM foreground', payload);
-      try{ if('setAppBadge' in navigator && payload.data?.count) navigator.setAppBadge(parseInt(payload.data.count)); }catch(e){}
+      console.log('FCM foreground - APP ABIERTA', payload);
+      try{ 
+        let count = parseInt(payload.data?.count||'1');
+        if('setAppBadge' in navigator && count>0) navigator.setAppBadge(count).catch(()=>{});
+        // Mostrar notificación también en foreground con sonido
+        if(Notification.permission==='granted' && payload.notification){
+          let title = payload.notification.title || payload.data?.sender || 'Vibra 💬';
+          let body = payload.notification.body || payload.data?.text || 'Nuevo mensaje';
+          new Notification(title, {body: body, icon: './icon-192.png', badge: './icon-192.png', vibrate: [80,40,80]});
+        }
+      }catch(e){}
     });
   }catch(e){ console.log('Parent FCM err', e); }
 }
-if('Notification' in window && Notification.permission==='granted'){ setTimeout(initParentFCM, 2000); }
+// Ejecutar al cargar
+if('Notification' in window){ 
+  setTimeout(initParentFCM, 1500);
+  // Reintentar si el usuario inicia sesión después
+  try{
+    window.firebase?.auth()?.onAuthStateChanged(()=>{ setTimeout(initParentFCM, 1000); });
+  }catch(e){}
+}
 
 // C: Share function
 function shareVibra(){
